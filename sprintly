@@ -105,11 +105,11 @@ class SprintlyTool:
         try:
             usage = 'By default, your Sprint.ly items will be shown.\n\nWhen using the commit-msg hook, you will be prompted for a Sprint.ly item number unless you include a Sprint.ly keyword/item number in your commit message:\n\n  \'Commit message goes here. References #54. Closes #65.\'\n\nValid Sprint.ly keywords are:\n\n  close, closes, closed, fix, fixed, fixes, addresses, re, ref, refs, references, see, breaks, unfixes, reopen, reopens, re-open, re-opens\n\nAs a shortcut, you may also include an item number as the first word in your commit message:\n\n  \'#26 Message goes here\'\n\nThe hook will automatically prepend the keyword \'references\' and you won\'t be asked to provide an item number. This shortcut only works at the beginning of the message and does not support multiple item numbers.'
             parser = argparse.ArgumentParser(description=usage, formatter_class=argparse.RawDescriptionHelpFormatter)
-            parser.add_argument('--install', dest='install', help='install this tool', action='store_true', default=False)
-            parser.add_argument('--update', dest='update', help='update this tool', action='store_true', default=False)
-            parser.add_argument('--install-hook', dest='installHook', help='install commit-msg hook in current directory (must be a git repository)', action='store_true', default=False)
-            parser.add_argument('--uninstall-hook', dest='uninstallHook', help='uninstall commit-msg hook in current directory (must be a git repository)', action='store_true', default=False)
-            parser.add_argument('--update-config', dest='updateConfig', help='edit configuration', action='store_true', default=False)
+            parser.add_argument('--install', help='install this tool', action='store_true')
+            parser.add_argument('--update', help='update this tool', action='store_true')
+            parser.add_argument('--install-hook', help='install commit-msg hook in current directory (must be a git repository)', action='store_true')
+            parser.add_argument('--uninstall-hook', help='uninstall commit-msg hook in current directory (must be a git repository)', action='store_true')
+            parser.add_argument('--update-config', help='edit configuration', action='store_true')
 
             options = parser.parse_args()
 
@@ -122,11 +122,11 @@ class SprintlyTool:
             self.initialize()
 
             # run the requested option (note: install/update are handled above)
-            if options.installHook:
+            if options.install_hook:
                 self.installHook()
-            elif options.uninstallHook:
+            elif options.uninstall_hook:
                 self.uninstallHook()
-            elif options.updateConfig:
+            elif options.update_config:
                 self.updateConfig()
             else:
                 self.listSprintlyItems()
