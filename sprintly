@@ -105,6 +105,7 @@ class SprintlyTool:
         try:
             usage = 'By default, your Sprint.ly items will be shown.\n\nWhen using the commit-msg hook, you will be prompted for a Sprint.ly item number unless you include a Sprint.ly keyword/item number in your commit message:\n\n  \'Commit message goes here. References #54. Closes #65.\'\n\nValid Sprint.ly keywords are:\n\n  close, closes, closed, fix, fixed, fixes, addresses, re, ref, refs, references, see, breaks, unfixes, reopen, reopens, re-open, re-opens\n\nAs a shortcut, you may also include an item number as the first word in your commit message:\n\n  \'#26 Message goes here\'\n\nThe hook will automatically prepend the keyword \'references\' and you won\'t be asked to provide an item number. This shortcut only works at the beginning of the message and does not support multiple item numbers.'
             parser = argparse.ArgumentParser(description=usage, formatter_class=argparse.RawDescriptionHelpFormatter)
+            parser.add_argument('--details', help='show item details', metavar="ITEM")
             parser.add_argument('--install', help='install this tool', action='store_true')
             parser.add_argument('--update', help='update this tool', action='store_true')
             parser.add_argument('--install-hook', help='install commit-msg hook in current directory (must be a git repository)', action='store_true')
@@ -128,6 +129,8 @@ class SprintlyTool:
                 self.uninstallHook()
             elif options.update_config:
                 self.updateConfig()
+            elif options.details is not None:
+                self.showItemDetails(options.details)
             else:
                 self.listSprintlyItems()
 
@@ -542,6 +545,29 @@ class SprintlyTool:
             raise SprintlyException('Cache is empty or invalid. Please try running the tool again.')
 
         return cache['products']
+
+    def showItemDetails(self, itemNumber):
+        """
+        Show the details of an item for the current user from the Sprint.ly API.
+        """
+
+        productId = str(self._config['product']['id'])
+
+        item = self.sprintlyAPICall('products/' + productId + '/items/' + itemNumber + '.json')
+
+        title_color = 'DEFAULT'
+        color = ITEM_COLORS.get(item['type'])
+
+        printItem = '${%s}(%s) ${DEFAULT}%s %s. - %s' % (color, item['score'], item['assigned_to']['first_name'], item['assigned_to']['last_name'][0], item['status'])
+        self.cprint(printItem)
+
+        printItem = '${BOLD}%s ${NORMAL}${DEFAULT}[%s]' % (item['title'], '], ['.join(item['tags']))
+        self.cprint(printItem)
+
+        self.cprint(item['description'])
+
+        printItem = '${%s}#%d ${DEFAULT}Created by %s %s. on %s' % (color, item['number'], item['created_by']['first_name'], item['created_by']['last_name'][0], item['created_at'])
+        self.cprint(printItem)
 
     def sprintlyAPICall(self, url):
         """
